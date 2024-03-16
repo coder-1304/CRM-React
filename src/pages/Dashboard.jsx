@@ -8,46 +8,9 @@ import Badge from "../components/badge/Badge";
 import statusCards from "../assets/JsonData/status-card-data.json";
 import { useState } from "react";
 import axios from "axios";
-
-// const chartOptions = {
-//   series: [
-//     {
-//       name: "Online Customers",
-//       data: [40, 70, 20, 90, 36, 80, 30, 91, 60],
-//     },
-//   ],
-//   options: {
-//     color: ["#6ab04c", "#2980b9"],
-//     chart: {
-//       background: "transparent",
-//     },
-//     dataLabels: {
-//       enabled: false,
-//     },
-//     stroke: {
-//       curve: "smooth",
-//     },
-//     xaxis: {
-//       categories: [
-//         "Jan",
-//         "Feb",
-//         "Mar",
-//         "Apr",
-//         "May",
-//         "Jun",
-//         "Jul",
-//         "Aug",
-//         "Sep",
-//       ],
-//     },
-//     legend: {
-//       position: "top",
-//     },
-//     grid: {
-//       show: false,
-//     },
-//   },
-// };
+import { doGet, doPost, getToken } from "../api/callAPI";
+import Cookies from "js-cookie";
+// import Notification from "../components/toast/Toast";
 
 const topCustomers = {
   head: ["user", "total orders", "total spending"],
@@ -186,20 +149,6 @@ const renderOrderBody = (item, index) => (
   </tr>
 );
 
-const separateArrays = (data) => {
-  const orderMonths = [];
-  const totalOrders = [];
-
-  // Iterate over the data array
-  data.forEach((item) => {
-    // Push the values of 'order_month_year' and 'total_orders' to respective arrays
-    orderMonths.push(item.order_month_year);
-    totalOrders.push(item.total_orders);
-  });
-  console.log(orderMonths, totalOrders);
-
-  return { orderMonths, totalOrders };
-};
 
 const Dashboard = () => {
   const themeReducer = useSelector((state) => state.ThemeReducer.mode);
@@ -207,152 +156,167 @@ const Dashboard = () => {
   const [chartOptions, setChartOptions] = useState({});
   const [loading, setLoading] = useState(true);
   const [loadingContent, setLoadingContent] = useState("Loading");
+  const [statusInfo, setStatusInfo] = useState([]);
 
-  function componentDidMount() {
+  async function componentDidMount() {
     // setChartData;
     // Make the API call when the component mounts
-    axios
-      .get("https://localhost:8443/rest/auth/token")
-      .then((response) => {
-        console.log("RESULT:--------------------");
-        console.log(response.data);
-        // const { data } = response;
-        // const orderMonths = [];
-        // const totalOrders = [];
+    const response = await doGet("rest/services/getSummary");
 
-        // for (let i = 0; i < data.length; i++) {
-        //   const item = data[i];
-        //   if (item && item.order_month_year && item.total_orders) {
-        //     orderMonths.push(item.order_month_year);
-        //     totalOrders.push(item.total_orders);
-        //   }
-        // }
+    console.log(response);
+    const { data } = response.data;
+    let monthViseOrders = data.monthViseOrders;
 
-        // setChartOptions({
-        //   series: [
-        //     {
-        //       name: "Total Completed Orders",
-        //       data: [...totalOrders],
-        //     },
-        //   ],
-        //   options: {
-        //     color: ["#6ab04c", "#2980b9"],
-        //     chart: {
-        //       background: "transparent",
-        //     },
-        //     dataLabels: {
-        //       enabled: false,
-        //     },
-        //     stroke: {
-        //       curve: "smooth",
-        //     },
-        //     xaxis: {
-        //       categories: [...orderMonths],
-        //     },
-        //     legend: {
-        //       position: "top",
-        //     },
-        //     grid: {
-        //       show: false,
-        //     },
-        //   },
-        // });
-        // setLoading(false);
-      })
-      .catch((error) => {
-        // Handle errors
-        setLoading(false); // Using setLoading to update the loading state
-        console.error("Error occurred while fetching data:", error);
-      });
+    const orderMonths = monthViseOrders.map((obj) => Object.keys(obj)[0]);
+    const totalOrders = monthViseOrders.map((obj) => Object.values(obj)[0]);
+
+    setStatusInfo([
+      {
+        icon: "bx bx-shopping-bag",
+        count: data.completedOrdersCount,
+        title: "Completed Orders",
+      },
+      {
+        icon: "bx bx-cart",
+        count: data.completedItemsCount,
+        title: "Completed Items",
+      },
+      {
+        icon: "bx bx-dollar-circle",
+        count: "$2,632",
+        title: "Total income",
+      },
+      {
+        icon: "bx bx-receipt",
+        count: "1,711",
+        title: "Total orders",
+      },
+    ]);
+
+    setChartOptions({
+      series: [
+        {
+          name: "Total Completed Orders",
+          data: [...totalOrders],
+        },
+      ],
+      options: {
+        color: ["#6ab04c", "#2980b9"],
+        chart: {
+          background: "transparent",
+        },
+        dataLabels: {
+          enabled: false,
+        },
+        stroke: {
+          curve: "smooth",
+        },
+        xaxis: {
+          categories: [...orderMonths],
+        },
+        legend: {
+          position: "top",
+        },
+        grid: {
+          show: false,
+        },
+      },
+    });
+    setLoading(false);
   }
 
   useEffect(() => {
+    getToken();
     componentDidMount();
   }, []);
 
   return (
-    // <>
-    //   {loading == true ? (
-    //     <div>{loadingContent}</div>
-    //   ) : (
-    //     <div>
-    //       <h2 className="page-header">Dashboard</h2>
-    //       <div className="row">
-    //         <div className="col-6">
-    //           <div className="row">
-    //             {statusCards.map((item, index) => (
-    //               <div className="col-6" key={index}>
-    //                 <StatusCard
-    //                   icon={item.icon}
-    //                   count={item.count}
-    //                   title={item.title}
-    //                 />
-    //               </div>
-    //             ))}
-    //           </div>
-    //         </div>
-    //         <div className="col-6">
-    //           <div className="card full-height">
-    //             {/* chart */}
-    //             <Chart
-    //               options={
-    //                 themeReducer === "theme-mode-dark"
-    //                   ? {
-    //                       ...chartOptions.options,
-    //                       theme: { mode: "dark" },
-    //                     }
-    //                   : {
-    //                       ...chartOptions.options,
-    //                       theme: { mode: "light" },
-    //                     }
-    //               }
-    //               series={chartOptions.series}
-    //               type="line"
-    //               height="100%"
-    //             />
-    //           </div>
-    //         </div>
-    //         <div className="col-4">
-    //           <div className="card">
-    //             <div className="card__header">
-    //               <h3>top customers</h3>
-    //             </div>
-    //             <div className="card__body">
-    //               <Table
-    //                 headData={topCustomers.head}
-    //                 renderHead={(item, index) => renderCusomerHead(item, index)}
-    //                 bodyData={topCustomers.body}
-    //                 renderBody={(item, index) => renderCusomerBody(item, index)}
-    //               />
-    //             </div>
-    //             <div className="card__footer">
-    //               <Link to="/">view all</Link>
-    //             </div>
-    //           </div>
-    //         </div>
-    //         <div className="col-8">
-    //           <div className="card">
-    //             <div className="card__header">
-    //               <h3>latest orders</h3>
-    //             </div>
-    //             <div className="card__body">
-    //               <Table
-    //                 headData={latestOrders.header}
-    //                 renderHead={(item, index) => renderOrderHead(item, index)}
-    //                 bodyData={latestOrders.body}
-    //                 renderBody={(item, index) => renderOrderBody(item, index)}
-    //               />
-    //             </div>
-    //             <div className="card__footer">
-    //               <Link to="/">view all</Link>
-    //             </div>
-    //           </div>
-    //         </div>
-    //       </div>
-    //     </div>
-    //   )}
-    // </>
-    <></>
+    <>
+      {/* <Notification text="Hello, world!" /> */}
+      {loading == true ? (
+        <div>{loadingContent}</div>
+      ) : (
+        <div>
+          <h2 className="page-header">Dashboard</h2>
+          <div className="row">
+            <div className="col-6">
+              <div className="row">
+                {statusInfo.map((item, index) => {
+                  console.log(item);
+                  return (
+                    <div className="col-6" key={index}>
+                      <StatusCard
+                        icon={item.icon}
+                        count={item.count}
+                        title={item.title}
+                      />
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+            <div className="col-6">
+              <div className="card full-height">
+                {/* chart */}
+                <Chart
+                  options={
+                    themeReducer === "theme-mode-dark"
+                      ? {
+                          ...chartOptions.options,
+                          theme: { mode: "dark" },
+                        }
+                      : {
+                          ...chartOptions.options,
+                          theme: { mode: "light" },
+                        }
+                  }
+                  series={chartOptions.series}
+                  type="line"
+                  height="100%"
+                />
+              </div>
+            </div>
+            <div className="col-4">
+              <div className="card">
+                <div className="card__header">
+                  <h3>top customers</h3>
+                </div>
+                <div className="card__body">
+                  <Table
+                    headData={topCustomers.head}
+                    renderHead={(item, index) => renderCusomerHead(item, index)}
+                    bodyData={topCustomers.body}
+                    renderBody={(item, index) => renderCusomerBody(item, index)}
+                  />
+                </div>
+                <div className="card__footer">
+                  <Link to="/">view all</Link>
+                </div>
+              </div>
+            </div>
+            <div className="col-8">
+              <div className="card">
+                <div className="card__header">
+                  <h3>latest orders</h3>
+                </div>
+                <div className="card__body">
+                  <Table
+                    headData={latestOrders.header}
+                    renderHead={(item, index) => renderOrderHead(item, index)}
+                    bodyData={latestOrders.body}
+                    renderBody={(item, index) => renderOrderBody(item, index)}
+                  />
+                </div>
+                <div className="card__footer">
+                  <Link to="/">view all</Link>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+    </>
+    // <></>
   );
 };
 
