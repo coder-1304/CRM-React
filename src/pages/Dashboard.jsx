@@ -161,10 +161,31 @@ const Dashboard = () => {
   async function componentDidMount() {
     // setChartData;
     // Make the API call when the component mounts
-    const response = await doGet("rest/services/getSummary");
 
-    console.log(response);
-    const { data } = response.data;
+      // const response = await doGet("rest/services/getSummary");
+
+    // console.log(response);
+    
+    // const { data } = response.data;
+
+     // Simulate API call response with hardcoded data
+     const hardcodedData = {
+      data: {
+          monthViseOrders: [
+              { "Jan": 100 },
+              { "Feb": 200 },
+              { "Mar": 150 },
+              // Add more months as needed
+          ],
+          completedOrdersCount: 1500,
+          completedItemsCount: 3000,
+          // Add more data as needed
+      }
+  };
+
+  // Extract data from the hardcoded response
+  const  data  = hardcodedData.data;
+ 
     let monthViseOrders = data.monthViseOrders;
 
     const orderMonths = monthViseOrders.map((obj) => Object.keys(obj)[0]);
@@ -223,6 +244,7 @@ const Dashboard = () => {
       },
     });
     setLoading(false);
+    
   }
 
   useEffect(() => {

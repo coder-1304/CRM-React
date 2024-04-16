@@ -1,17 +1,17 @@
 [
     {
-        "display_name": "Super Admin",
-        "route": "/superadmin",
+        "display_name": "Dashboard",
+        "route": "/",
         "icon": "bx bxs-user-rectangle"
     },
     {
-        "display_name": "Companies",
-        "route": "/Companies",
+        "display_name": "Employees",
+        "route": "/Employees",
         "icon": "bx bxs-buildings"
     },
     {
-        "display_name": "Users",
-        "route": "/Users",
+        "display_name": "Customers",
+        "route": "/Customers",
         "icon": "bx bxs-user-account"
     },
     {
@@ -26,12 +26,12 @@
     },
     {
         "display_name": "Radar Chart",
-        "route": "/RadarChart",
+        "route": "/Pie",
         "icon": "bx bx-radar"
     },
     {
-        "display_name": "ScoreBoard",
-        "route": "/ScoreBoard",
+        "display_name": "Orders",
+        "route": "/Orders",
         "icon": "bx bx-clipboard"
     }
 ]
